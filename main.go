@@ -53,9 +53,9 @@ func injectDll(pid uint32, path string) error {
 	}
 	print("Opened process!")
 
-	r1, _, err := VirtualAllocEx.Call(uintptr(handle), 0, uintptr(len(path)+1), windows.MEM_COMMIT|windows.MEM_RESERVE, windows.PAGE_EXECUTE_READWRITE)
-	if err != nil {
-		return err
+	r1, _, _ := VirtualAllocEx.Call(uintptr(handle), 0, uintptr(len(path)+1), windows.MEM_COMMIT|windows.MEM_RESERVE, windows.PAGE_EXECUTE_READWRITE)
+	if r1 == 0 {
+		return fmt.Errorf("VirtualAllocEx failed.")
 	}
 	print("VirtualAllocEx")
 
