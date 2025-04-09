@@ -1,2 +1,2 @@
-# Fortress
-Cross-platform Fortnite launcher for legacy versions.
+# FortressCore
+Fortnite launcher intended for use in tandem with Wine/Bottles/Lutris

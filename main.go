@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
+	"path/filepath"
 	"syscall"
 
 	"golang.org/x/sys/windows"
@@ -89,23 +91,22 @@ func injectDll(pid uint32, path string) error {
 }
 
 func main() {
-	fortnitePath := "D:\\Fortnite Modding\\Builds\\Fortnite 1.11"
-	binariesPath := fortnitePath + "\\FortniteGame\\Binaries\\Win64\\"
+	fortnitePath, _ := os.Getwd()
+	binariesPath := filepath.Join(fortnitePath, "FortniteGame\\Binaries\\Win64\\")
 	launchArgs := "-epicapp=Fortnite -epicenv=Prod -epiclocale=en-us -epicportal -skippatchcheck -NOSSLPINNING -nobe -fromfl=eac -fltoken=7a848a93a74ba68876c36C1c -caldera=eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50X2lkIjoiYmU5ZGE1YzJmYmVhNDQwN2IyZjQwZWJhYWQ4NTlhZDQiLCJnZW5lcmF0ZWQiOjE2Mzg3MTcyNzgsImNhbGRlcmFHdWlkIjoiMzgxMGI4NjMtMmE2NS00NDU3LTliNTgtNGRhYjNiNDgyYTg2IiwiYWNQcm92aWRlciI6IkVhc3lBbnRpQ2hlYXQiLCJub3RlcyI6IiIsImZhbGxiYWNrIjpmYWxzZX0.VAWQB67RTxhiWOxx7DBjnzDnXyyEnX7OljJm-j2d88G_WgwQ9wrE6lwMEHZHjBd1ISJdUO1UVUqkfLdU5nofBQ"
-	launcherExe := binariesPath + "FortniteLauncher.exe"
-	eacExe := binariesPath + "FortniteClient-Win64-Shipping_EAC.exe"
-	shippingExe := binariesPath + "FortniteClient-Win64-Shipping.exe"
+	//launcherExe := filepath.Join(binariesPath, "FortniteLauncher.exe")
+	//eacExe := filepath.Join(binariesPath, "FortniteClient-Win64-Shipping_EAC.exe")
+	shippingExe := filepath.Join(binariesPath, "FortniteClient-Win64-Shipping.exe")
 
-	eacCmd := exec.Command(eacExe, launchArgs)
-	launcherCmd := exec.Command(launcherExe, launchArgs)
+	// cobaltDllPath := fmt.Sprintf("%sCobaltLocal.dll", &fortnitePath)
+
+	//eacCmd := exec.Command(eacExe, launchArgs)
+	//launcherCmd := exec.Command(launcherExe, launchArgs)
 	shippingCmd := exec.Command(shippingExe, launchArgs)
 
-	print(eacCmd)
-	print(launcherCmd)
-
 	shippingCmd.Start()
-	err := injectDll(uint32(shippingCmd.Process.Pid), "D:\\Fortnite Modding\\LegacyLauncher\\CobaltLocal.dll")
-	if err != nil {
-		print(err)
-	}
+	// err := injectDll(uint32(shippingCmd.Process.Pid), cobaltDllPath)
+	// if err != nil {
+	// 	print(err)
+	// }
 }
