@@ -93,7 +93,7 @@ func injectDll(pid uint32, path string) error {
 func main() {
 	fortnitePath, _ := os.Getwd()
 	binariesPath := filepath.Join(fortnitePath, "FortniteGame\\Binaries\\Win64\\")
-	launchArgs := "-epicapp=Fortnite -epicenv=Prod -epiclocale=en-us -epicportal -skippatchcheck -NOSSLPINNING -nobe -HTTP=WinINet"
+	launchArgs := "-epicapp=Fortnite -epicenv=Prod -epiclocale=en-us -epicportal -skippatchcheck -NOSSLPINNING -nobe"
 	//launcherExe := filepath.Join(binariesPath, "FortniteLauncher.exe")
 	//eacExe := filepath.Join(binariesPath, "FortniteClient-Win64-Shipping_EAC.exe")
 	shippingExe := filepath.Join(binariesPath, "FortniteClient-Win64-Shipping.exe")
