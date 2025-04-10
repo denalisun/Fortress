@@ -1,11 +1,13 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"syscall"
+	"time"
 
 	"golang.org/x/sys/windows"
 )
@@ -90,23 +92,57 @@ func injectDll(pid uint32, path string) error {
 	return nil
 }
 
+func remove(slice []string, s int) []string {
+	return append(slice[:s], slice[s+1:]...)
+}
+
 func main() {
 	fortnitePath, _ := os.Getwd()
 	binariesPath := filepath.Join(fortnitePath, "FortniteGame\\Binaries\\Win64\\")
 	launchArgs := "-epicapp=Fortnite -epicenv=Prod -epiclocale=en-us -epicportal -skippatchcheck -NOSSLPINNING -nobe"
+
+	bServer := false
+	if len(os.Args) > 1 {
+		for i := 0; i < len(os.Args); i++ {
+			slice := os.Args[i]
+			if slice == "--server" {
+				bServer = true
+				os.Args = remove(os.Args, i)
+			}
+		}
+	}
+
+	cobaltDllPath := filepath.Join(fortnitePath, "Cobalt.dll")
+	rebootDllPath := filepath.Join(fortnitePath, "Reboot.dll")
+
 	//launcherExe := filepath.Join(binariesPath, "FortniteLauncher.exe")
 	//eacExe := filepath.Join(binariesPath, "FortniteClient-Win64-Shipping_EAC.exe")
 	shippingExe := filepath.Join(binariesPath, "FortniteClient-Win64-Shipping.exe")
-
-	cobaltDllPath := filepath.Join(fortnitePath, "Cobalt.dll")
-
-	//eacCmd := exec.Command(eacExe, launchArgs)
-	//launcherCmd := exec.Command(launcherExe, launchArgs)
 	shippingCmd := exec.Command(shippingExe, launchArgs)
 
 	shippingCmd.Start()
 	err := injectDll(uint32(shippingCmd.Process.Pid), cobaltDllPath)
 	if err != nil {
-		print(err)
+		fmt.Println(err)
+	}
+
+	if bServer {
+		fmt.Println("Press Enter to inject Reboot!")
+		bufio.NewReader(os.Stdin).ReadBytes('\n')
+		err := injectDll(uint32(shippingCmd.Process.Pid), rebootDllPath)
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
+
+	for {
+		time.Sleep(1 * time.Second)
+
+		pid := getPid("FortniteClient-Win64-Shipping.exe")
+		_, err := os.FindProcess(int(pid))
+
+		if err != nil {
+			break
+		}
 	}
 }
