@@ -93,20 +93,20 @@ func injectDll(pid uint32, path string) error {
 func main() {
 	fortnitePath, _ := os.Getwd()
 	binariesPath := filepath.Join(fortnitePath, "FortniteGame\\Binaries\\Win64\\")
-	launchArgs := "-epicapp=Fortnite -epicenv=Prod -epiclocale=en-us -epicportal -skippatchcheck -NOSSLPINNING -nobe -fromfl=eac -fltoken=7a848a93a74ba68876c36C1c -caldera=eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50X2lkIjoiYmU5ZGE1YzJmYmVhNDQwN2IyZjQwZWJhYWQ4NTlhZDQiLCJnZW5lcmF0ZWQiOjE2Mzg3MTcyNzgsImNhbGRlcmFHdWlkIjoiMzgxMGI4NjMtMmE2NS00NDU3LTliNTgtNGRhYjNiNDgyYTg2IiwiYWNQcm92aWRlciI6IkVhc3lBbnRpQ2hlYXQiLCJub3RlcyI6IiIsImZhbGxiYWNrIjpmYWxzZX0.VAWQB67RTxhiWOxx7DBjnzDnXyyEnX7OljJm-j2d88G_WgwQ9wrE6lwMEHZHjBd1ISJdUO1UVUqkfLdU5nofBQ"
+	launchArgs := "-epicapp=Fortnite -epicenv=Prod -epiclocale=en-us -epicportal -skippatchcheck -NOSSLPINNING -nobe -HTTP=WinINet"
 	//launcherExe := filepath.Join(binariesPath, "FortniteLauncher.exe")
 	//eacExe := filepath.Join(binariesPath, "FortniteClient-Win64-Shipping_EAC.exe")
 	shippingExe := filepath.Join(binariesPath, "FortniteClient-Win64-Shipping.exe")
 
-	// cobaltDllPath := fmt.Sprintf("%sCobaltLocal.dll", &fortnitePath)
+	cobaltDllPath := filepath.Join(fortnitePath, "Cobalt.dll")
 
 	//eacCmd := exec.Command(eacExe, launchArgs)
 	//launcherCmd := exec.Command(launcherExe, launchArgs)
 	shippingCmd := exec.Command(shippingExe, launchArgs)
 
 	shippingCmd.Start()
-	// err := injectDll(uint32(shippingCmd.Process.Pid), cobaltDllPath)
-	// if err != nil {
-	// 	print(err)
-	// }
+	err := injectDll(uint32(shippingCmd.Process.Pid), cobaltDllPath)
+	if err != nil {
+		print(err)
+	}
 }
