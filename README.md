@@ -1,2 +1,2 @@
-# FortressCore
-Fortnite launcher intended for use in tandem with Wine/Bottles/Lutris
+# Fortress Launcher
+Launcher program for Project Fortress

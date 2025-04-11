@@ -3,12 +3,18 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"io/fs"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"syscall"
 	"time"
 
+	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/app"
+	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/widget"
 	"golang.org/x/sys/windows"
 )
 
@@ -96,8 +102,7 @@ func remove(slice []string, s int) []string {
 	return append(slice[:s], slice[s+1:]...)
 }
 
-func main() {
-	fortnitePath, _ := os.Getwd()
+func launchGame(fortnitePath string) {
 	binariesPath := filepath.Join(fortnitePath, "FortniteGame\\Binaries\\Win64\\")
 	launchArgs := "-epicapp=Fortnite -epicenv=Prod -epiclocale=en-us -epicportal -skippatchcheck -NOSSLPINNING -nobe"
 
@@ -110,13 +115,13 @@ func main() {
 				os.Args = remove(os.Args, i)
 			}
 		}
+
+		launchArgs += strings.Join(os.Args, " ")
 	}
 
 	cobaltDllPath := filepath.Join(fortnitePath, "Cobalt.dll")
 	rebootDllPath := filepath.Join(fortnitePath, "Reboot.dll")
 
-	//launcherExe := filepath.Join(binariesPath, "FortniteLauncher.exe")
-	//eacExe := filepath.Join(binariesPath, "FortniteClient-Win64-Shipping_EAC.exe")
 	shippingExe := filepath.Join(binariesPath, "FortniteClient-Win64-Shipping.exe")
 	shippingCmd := exec.Command(shippingExe, launchArgs)
 
@@ -145,4 +150,30 @@ func main() {
 			break
 		}
 	}
+}
+
+func main() {
+	localAppData := os.Getenv("LOCALAPPDATA")
+	fortressAppData := filepath.Join(localAppData, ".FortressLauncher")
+	if _, err := os.Stat(fortressAppData); os.IsNotExist(err) {
+		os.Mkdir(fortressAppData, fs.FileMode(os.O_CREATE))
+	}
+
+	a := app.New()
+	w := a.NewWindow("Fortress Launcher")
+
+	mainContent := makePlayContent()
+	sidebar := container.NewVBox(
+		widget.NewLabelWithStyle("Fortress Launcher", fyne.TextAlignCenter, fyne.TextStyle{}),
+		widget.NewButton("Play", func() { changePages(mainContent, makePlayContent()) }),
+		widget.NewButton("Options", func() {}),
+		widget.NewButton("Mods", func() {}),
+		widget.NewButton("Exit", func() { changePages(mainContent, makeExitContent(w)) }),
+	)
+	split := container.NewHSplit(sidebar, mainContent)
+
+	w.SetContent(split)
+	w.Resize(fyne.NewSize(800, 600))
+
+	w.ShowAndRun()
 }
