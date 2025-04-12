@@ -102,9 +102,21 @@ func remove(slice []string, s int) []string {
 	return append(slice[:s], slice[s+1:]...)
 }
 
-func launchGame(fortnitePath string) {
-	binariesPath := filepath.Join(fortnitePath, "FortniteGame\\Binaries\\Win64\\")
-	launchArgs := "-epicapp=Fortnite -epicenv=Prod -epiclocale=en-us -epicportal -skippatchcheck -NOSSLPINNING -nobe"
+func launchGame(settings *LauncherSettings) {
+	binariesPath := filepath.Join(settings.FortniteInstallPath, "FortniteGame\\Binaries\\Win64\\")
+	launchArgsSlice := []string{
+		"-epicapp=Fortnite",
+		"-epicenv=Prod",
+		"-epiclocale=en-us",
+		"-epicportal",
+		"-skippatchcheck",
+		"-NOSSLPINNING",
+		"-nobe",
+		fmt.Sprintf("--AUTH_LOGIN=%s", settings.Username),
+		fmt.Sprintf("--AUTH_PASSWORD=%s", settings.Password),
+		"--AUTH_TYPE=epic",
+	}
+	launchArgs := strings.Join(launchArgsSlice, " ")
 
 	bServer := false
 	if len(os.Args) > 1 {
@@ -119,8 +131,8 @@ func launchGame(fortnitePath string) {
 		launchArgs += strings.Join(os.Args, " ")
 	}
 
-	cobaltDllPath := filepath.Join(fortnitePath, "Cobalt.dll")
-	rebootDllPath := filepath.Join(fortnitePath, "Reboot.dll")
+	cobaltDllPath := filepath.Join(settings.FortniteInstallPath, "Cobalt.dll")
+	rebootDllPath := filepath.Join(settings.FortniteInstallPath, "Reboot.dll")
 
 	shippingExe := filepath.Join(binariesPath, "FortniteClient-Win64-Shipping.exe")
 	shippingCmd := exec.Command(shippingExe, launchArgs)
@@ -153,20 +165,35 @@ func launchGame(fortnitePath string) {
 }
 
 func main() {
+	// Creating folder
 	localAppData := os.Getenv("LOCALAPPDATA")
 	fortressAppData := filepath.Join(localAppData, ".FortressLauncher")
 	if _, err := os.Stat(fortressAppData); os.IsNotExist(err) {
 		os.Mkdir(fortressAppData, fs.FileMode(os.O_CREATE))
 	}
 
+	// Creating settings
+	var settings LauncherSettings
+	settingsPath := filepath.Join(fortressAppData, "settings.json")
+	if _, err := os.Stat(settingsPath); os.IsNotExist(err) {
+		settings = LauncherSettings{
+			FortniteInstallPath: "",
+			Username:            "",
+			Password:            "",
+		}
+	} else {
+		settings = loadSettings()
+	}
+
+	// Setting up the app
 	a := app.New()
 	w := a.NewWindow("Fortress Launcher")
 
-	mainContent := makePlayContent()
+	mainContent := makePlayContent(&settings)
 	sidebar := container.NewVBox(
 		widget.NewLabelWithStyle("Fortress Launcher", fyne.TextAlignCenter, fyne.TextStyle{}),
-		widget.NewButton("Play", func() { changePages(mainContent, makePlayContent()) }),
-		widget.NewButton("Options", func() {}),
+		widget.NewButton("Play", func() { changePages(mainContent, makePlayContent(&settings)) }),
+		widget.NewButton("Options", func() { changePages(mainContent, makeOptionsContent(&settings)) }),
 		widget.NewButton("Mods", func() {}),
 		widget.NewButton("Exit", func() { changePages(mainContent, makeExitContent(w)) }),
 	)
@@ -174,6 +201,10 @@ func main() {
 
 	w.SetContent(split)
 	w.Resize(fyne.NewSize(800, 600))
+
+	w.SetOnClosed(func() {
+		writeSettings(&settings)
+	})
 
 	w.ShowAndRun()
 }

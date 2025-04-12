@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
@@ -11,12 +13,43 @@ func changePages(content *fyne.Container, newContent *fyne.Container) {
 	content.Refresh()
 }
 
-func makePlayContent() *fyne.Container {
+func makePlayContent(settings *LauncherSettings) *fyne.Container {
 	pathEntry := widget.NewEntry()
 	pathEntry.SetPlaceHolder("Fortnite Path (D:\\ProjectFortress\\)")
+	pathEntry.Text = settings.FortniteInstallPath
+	pathEntry.OnChanged = func(text string) {
+		fmt.Println(text)
+		settings.FortniteInstallPath = text
+	}
+
+	launchBtn := widget.NewButton("Launch Fortress", func() {
+		go launchGame(settings)
+	})
 
 	return container.NewVBox(
 		pathEntry,
+		launchBtn,
+	)
+}
+
+func makeOptionsContent(settings *LauncherSettings) *fyne.Container {
+	usernameEntry := widget.NewEntry()
+	usernameEntry.SetPlaceHolder("E-mail/Username")
+	usernameEntry.Text = settings.Username
+	usernameEntry.OnChanged = func(text string) {
+		settings.Username = text
+	}
+
+	passwordEntry := widget.NewPasswordEntry()
+	passwordEntry.SetPlaceHolder("Password")
+	passwordEntry.Text = settings.Password
+	passwordEntry.OnChanged = func(text string) {
+		settings.Password = text
+	}
+
+	return container.NewVBox(
+		usernameEntry,
+		passwordEntry,
 	)
 }
 
