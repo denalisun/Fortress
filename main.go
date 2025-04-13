@@ -187,21 +187,21 @@ func main() {
 
 	// Setting up the app
 	a := app.New()
+	a.Settings().SetTheme(&myTheme{})
+
 	w := a.NewWindow("Fortress Launcher")
 
 	mainContent := makePlayContent(&settings)
-	sidebar := container.NewVBox(
+	sidebar := container.NewBorder(container.NewVBox(
 		widget.NewLabelWithStyle("Fortress Launcher", fyne.TextAlignCenter, fyne.TextStyle{}),
 		widget.NewButton("Play", func() { changePages(mainContent, makePlayContent(&settings)) }),
 		widget.NewButton("Options", func() { changePages(mainContent, makeOptionsContent(&settings)) }),
 		widget.NewButton("Mods", func() {}),
-		widget.NewButton("Exit", func() { changePages(mainContent, makeExitContent(w)) }),
-	)
-	split := container.NewHSplit(sidebar, mainContent)
+	), widget.NewButton("Exit", func() { changePages(mainContent, makeExitContent(w)) }), nil, nil)
+	borderPatrol := container.NewBorder(nil, nil, sidebar, nil, mainContent)
 
-	w.SetContent(split)
+	w.SetContent(borderPatrol)
 	w.Resize(fyne.NewSize(800, 600))
-
 	w.SetOnClosed(func() {
 		writeSettings(&settings)
 	})
